@@ -1,0 +1,19 @@
+{
+  "name": "node_test_parser_rozetka",
+  "version": "1.0.0",
+  "description": "from_rozetka_to_OpenCart 2.3.0.2",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tolik555/from_rozetka_to_OpenCart-2.3.0.2.git"
+  },
+  "author": "Anatoly Mihaylyuk",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tolik555/from_rozetka_to_OpenCart-2.3.0.2/issues"
+  },
+  "homepage": "https://github.com/tolik555/from_rozetka_to_OpenCart-2.3.0.2#readme"
+}
