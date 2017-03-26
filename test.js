@@ -4,6 +4,7 @@ var needle = require('needle');
 var cheerio = require('cheerio');
 var fs = require('fs');
 var escape = require('escape-html');
+var shell = require('shelljs');
 
 var startURL = 'http://rozetka.com.ua/lenovo_ideapad_110_15ibr_80t7004tra/p12119220/';
 var imageURL = '';
@@ -131,17 +132,13 @@ function crawl(url, callback){
         
         result_oc_product.model = result_oc_product_description.meta_title.split(' ', 4).splice(0, 3).join(' ');
         imageFolder = "images\\" + result_oc_product.model.replace(new RegExp(" ", 'g'), '\\') + "\\";
-        console.log(imageFolder);
+        shell.mkdir('-p', imageFolder);
         
         imageURL = $('meta[property="og:image"]').attr('content');
-        try{
-            fs.mkdirSync(imageFolder);
-        }
-        finally{
-            //do something
-        }
+        imageName = imageURL.split('/').pop();
+        console.log(imageName);
         
-        needle.get(imageURL, { output: imageFolder+'111.jpg' }, function(err, resp, body){
+        needle.get(imageURL, { output: imageFolder+imageName }, function(err, resp, body){
           if(err) {
               log.e(err);
               return;
