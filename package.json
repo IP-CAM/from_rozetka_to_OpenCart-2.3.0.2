@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/tolik555/from_rozetka_to_OpenCart-2.3.0.2/issues"
   },
-  "homepage": "https://github.com/tolik555/from_rozetka_to_OpenCart-2.3.0.2#readme"
+  "homepage": "https://github.com/tolik555/from_rozetka_to_OpenCart-2.3.0.2#readme",
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "mocha": "^3.2.0"
+  }
 }
