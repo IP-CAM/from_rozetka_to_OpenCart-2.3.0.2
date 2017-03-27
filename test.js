@@ -22,7 +22,7 @@ var result_oc_product_description = {
 };
 
 var result_oc_product = {
-    "product_id": '',//autoincrement
+    "product_id": '', //autoincrement
     "model": '',
     "sku": '',
     "upc": '',
@@ -55,7 +55,7 @@ var result_oc_product = {
     "date_modified": ''
 };
 
-var result_oc_product_attribute ={
+var result_oc_product_attribute = {
     "product_id": '',
     "attribute_id": '',
     "language_id": '',
@@ -63,14 +63,14 @@ var result_oc_product_attribute ={
 };
 
 var result_oc_product_image = {
-    "product_image_id": '',//autoincrement
+    "product_image_id": '', //autoincrement
     "product_id": '',
     "image": '',
     "sort_order": ''
 };
 
 var result_oc_product_option = {
-    "product_option_id": '',//autoincrement
+    "product_option_id": '', //autoincrement
     "product_id": '',
     "option_id": '',
     "value": '',
@@ -96,59 +96,61 @@ var result_oc_product_to_store = {
 var results = [];
 var temp;
 var $;
-var a=0;
+var a = 0;
 var i;
 
 var q = tress(crawl);
 
 q.push(startURL);
 
-q.drain = function(){
+q.drain = function () {
     fs.writeFileSync('./data.json', JSON.stringify(result_oc_product_description, null, 4));
     log.finish();
     log('Работа закончена');
 }
 
-function crawl(url, callback){
-    needle.get(url, function(err, res){
+function crawl(url, callback) {
+    needle.get(url, function (err, res) {
         if (err || res.statusCode !== 200) {
             log.e((err || res.statusCode) + ' - ' + url);
             return callback(true);
         }
-        
-        body = res.body.replace(new RegExp("<br>",'g')," \r\n");
+
+        body = res.body.replace(new RegExp("<br>", 'g'), " \r\n");
         var $ = cheerio.load(body);
         //console.log($);
         result_oc_product_description.name = $('h1.detail-title').text();
-        $('div#short_text.b-rich-text.text-description-content').each(function(){
-            result_oc_product_description.description = $(this).text().replace(new RegExp(" \r\n",'g'),"<br>");
+        $('div#short_text.b-rich-text.text-description-content').each(function () {
+            result_oc_product_description.description = $(this).text().replace(new RegExp(" \r\n", 'g'), "<br>");
         });
         result_oc_product_description.meta_title = $('meta[property="og:title"]').attr('content');
         result_oc_product_description.meta_keyword = $('meta[name="keywords"]').attr('content');
         result_oc_product_description.meta_desctiption = $('meta[name="description"]')
             .attr('content')
-            .replace(new RegExp("Rozetka.ua.",'g'),"opencart")
-            .replace(new RegExp("537-02-22",'g'),"222-22-22")
-            .replace(new RegExp("0 800 503-808",'g'),"0 800 222-222");
-        
+            .replace(new RegExp("Rozetka.ua.", 'g'), "opencart")
+            .replace(new RegExp("537-02-22", 'g'), "222-22-22")
+            .replace(new RegExp("0 800 503-808", 'g'), "0 800 222-222");
+
         result_oc_product.model = result_oc_product_description.meta_title.split(' ', 4).splice(0, 3).join(' ');
         imageFolder = "images\\" + result_oc_product.model.replace(new RegExp(" ", 'g'), '\\') + "\\";
         shell.mkdir('-p', imageFolder);
-        
+
         imageURL = $('meta[property="og:image"]').attr('content');
         imageName = imageURL.split('/').pop();
-        
-        needle.get(imageURL, { output: imageFolder+imageName }, function(err, resp, body){
-          if(err) {
-              log.e(err);
-              return;
-          }
-          result_oc_product.image = imageFolder+imageName;
-          log("Фото стоздано: "+result_oc_product.image);
+
+        needle.get(imageURL, {
+            output: imageFolder + imageName
+        }, function (err, resp, body) {
+            if (err) {
+                log.e(err);
+                return;
+            }
+            result_oc_product.image = imageFolder + imageName;
+            log("Фото стоздано: " + result_oc_product.image);
         });
-        
+
         temp = result_oc_product.model.split(' ').shift();
-        switch (temp){
+        switch (temp) {
             case "Lenovo":
                 result_oc_product.manufacturer_id = 11;
                 break;
@@ -186,10 +188,11 @@ function crawl(url, callback){
                 log('noname manufacturer');
                 break;
         }
-        
         result_oc_product.price = $('meta[itemprop="price"]').attr('content');
-        
-        console.log(result_oc_product_description);   
+        temp = new Date();
+        result_oc_product.date_added = result_oc_product.date_modified = temp.getFullYear() + "." + ((temp.getMonth() + 1) > 9 ? (temp.getMonth() + 1) : "0" + (temp.getMonth() + 1)) + "." + ((temp.getDate() + 1) > 9 ? (temp.getDate() + 1) : "0" + (temp.getDate() + 1)) + " " + ((temp.getHours() + 1) > 9 ? (temp.getHours() + 1) : "0" + (temp.getHours() + 1)) + ":" + ((temp.getMinutes() + 1) > 9 ? (temp.getMinutes() + 1) : "0" + (temp.getMinutes() + 1)) + ":" + ((temp.getSeconds() + 1) > 9 ? (temp.getSeconds() + 1) : "0" + (temp.getSeconds() + 1));
+
+        console.log(result_oc_product_description);
         callback();
     });
 }
