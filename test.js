@@ -6,7 +6,7 @@ var fs = require('fs');
 var escape = require('escape-html');
 var shell = require('shelljs');
 
-var startURL = 'http://rozetka.com.ua/lenovo_ideapad_110_15ibr_80t7004tra/p12119220/';
+var startURL = 'http://rozetka.com.ua/xiaomi_mi_notebook_air_13_3_sl/p10604934/';
 var imageURL = '';
 
 var httpOptions = {};
@@ -32,7 +32,7 @@ var result_oc_product = {
     "mpn": '',
     "location": '',
     "quantity": '990',
-    "stock_status_id": '5',
+    "stock_status_id": 5,
     "image": '',
     "manufacturer_id": '',
     "shipping": 1,
@@ -94,6 +94,7 @@ var result_oc_product_to_store = {
 };
 
 var results = [];
+var temp;
 var $;
 var a=0;
 var i;
@@ -136,14 +137,55 @@ function crawl(url, callback){
         
         imageURL = $('meta[property="og:image"]').attr('content');
         imageName = imageURL.split('/').pop();
-        console.log(imageName);
         
         needle.get(imageURL, { output: imageFolder+imageName }, function(err, resp, body){
           if(err) {
               log.e(err);
               return;
           }
+          result_oc_product.image = imageFolder+imageName;
+          log("Фото стоздано: "+result_oc_product.image);
         });
+        
+        temp = result_oc_product.model.split(' ').shift();
+        switch (temp){
+            case "Lenovo":
+                result_oc_product.manufacturer_id = 11;
+                break;
+            case "Acer":
+                result_oc_product.manufacturer_id = 13;
+                break;
+            case "Apple":
+                result_oc_product.manufacturer_id = 8;
+                break;
+            case "Asus":
+                result_oc_product.manufacturer_id = 12;
+                break;
+            case "Dell":
+                result_oc_product.manufacturer_id = 15;
+                break;
+            case "GoClever":
+                result_oc_product.manufacturer_id = 14;
+                break;
+            case "HP":
+                result_oc_product.manufacturer_id = 7;
+                break;
+            case "MSI":
+                result_oc_product.manufacturer_id = 16;
+                break;
+            case "Prestigio":
+                result_oc_product.manufacturer_id = 17;
+                break;
+            case "Razer":
+                result_oc_product.manufacturer_id = 18;
+                break;
+            case "Xiaomi":
+                result_oc_product.manufacturer_id = 19;
+                break;
+            default:
+                log('noname manufacturer');
+                break;
+        }
         
         console.log(result_oc_product_description);   
         callback();
