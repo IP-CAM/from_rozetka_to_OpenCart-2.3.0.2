@@ -6,18 +6,20 @@ var fs = require('fs');
 var escape = require('escape-html');
 var shell = require('shelljs');
 
+var CreateNewProduct = require('./models/model');
+
 var startURL = 'http://rozetka.com.ua/xiaomi_mi_notebook_air_13_3_sl/p10604934/';
 var imageURL = '';
-
 var httpOptions = {};
+
 var result_oc_product_description = {
-    "product_id": 1,
+    "product_id": '',
     "language_id": 1,
     "name": '',
     "description": '',
     "tag": '',
     "meta_title": '',
-    "meta_desctiption": '',
+    "meta_description": '',
     "meta_keyword": ''
 };
 
@@ -33,7 +35,7 @@ var result_oc_product = {
     "location": '',
     "quantity": '990',
     "stock_status_id": 5,
-    "image": '',
+    "image": '123',
     "manufacturer_id": '',
     "shipping": 1,
     "price": 0,
@@ -46,7 +48,7 @@ var result_oc_product = {
     "width": 0,
     "height": 0,
     "length_class_id": 1,
-    "substract": 1,
+    "subtract": 1,
     "minimum": 0,
     "sort_order": 0,
     "status": 1,
@@ -55,38 +57,38 @@ var result_oc_product = {
     "date_modified": ''
 };
 
-var result_oc_product_attribute = {
-    "product_id": '',
-    "attribute_id": '',
-    "language_id": '',
-    "text": ''
-};
+//var result_oc_product_attribute = {
+//    "product_id": '',
+//    "attribute_id": '',
+//    "language_id": '',
+//    "text": ''
+//};
 
-var result_oc_product_image = {
-    "product_image_id": '', //autoincrement
-    "product_id": '',
-    "image": '',
-    "sort_order": ''
-};
+//var result_oc_product_image = {
+//    "product_image_id": '', //autoincrement
+//    "product_id": '',
+//    "image": '',
+//    "sort_order": 0
+//};
 
-var result_oc_product_option = {
-    "product_option_id": '', //autoincrement
-    "product_id": '',
-    "option_id": '',
-    "value": '',
-    "required": ''
-};
+//var result_oc_product_option = {
+//    "product_option_id": '', //autoincrement
+//    "product_id": '',
+//    "option_id": '',
+//    "value": '',
+//    "required": ''
+//};
 
 var result_oc_product_to_category = {
     "product_id": '',
-    "category_id": ''
+    "category_id": 18
 };
 
-var result_oc_product_to_layout = {
-    "product_id": '',
-    "store_id": 0,
-    "layout_id": 0
-};
+//var result_oc_product_to_layout = {
+//    "product_id": '',
+//    "store_id": 0,
+//    "layout_id": 0
+//};
 
 var result_oc_product_to_store = {
     "product_id": '',
@@ -125,7 +127,7 @@ function crawl(url, callback) {
         });
         result_oc_product_description.meta_title = $('meta[property="og:title"]').attr('content');
         result_oc_product_description.meta_keyword = $('meta[name="keywords"]').attr('content');
-        result_oc_product_description.meta_desctiption = $('meta[name="description"]')
+        result_oc_product_description.meta_description = $('meta[name="description"]')
             .attr('content')
             .replace(new RegExp("Rozetka.ua.", 'g'), "opencart")
             .replace(new RegExp("537-02-22", 'g'), "222-22-22")
@@ -137,17 +139,6 @@ function crawl(url, callback) {
 
         imageURL = $('meta[property="og:image"]').attr('content');
         imageName = imageURL.split('/').pop();
-
-        needle.get(imageURL, {
-            output: imageFolder + imageName
-        }, function (err, resp, body) {
-            if (err) {
-                log.e(err);
-                return;
-            }
-            result_oc_product.image = imageFolder + imageName;
-            log("Фото стоздано: " + result_oc_product.image);
-        });
 
         temp = result_oc_product.model.split(' ').shift();
         switch (temp) {
@@ -191,6 +182,28 @@ function crawl(url, callback) {
         result_oc_product.price = $('meta[itemprop="price"]').attr('content');
         temp = new Date();
         result_oc_product.date_added = result_oc_product.date_modified = temp.getFullYear() + "." + ((temp.getMonth() + 1) > 9 ? (temp.getMonth() + 1) : "0" + (temp.getMonth() + 1)) + "." + ((temp.getDate() + 1) > 9 ? (temp.getDate() + 1) : "0" + (temp.getDate() + 1)) + " " + ((temp.getHours() + 1) > 9 ? (temp.getHours() + 1) : "0" + (temp.getHours() + 1)) + ":" + ((temp.getMinutes() + 1) > 9 ? (temp.getMinutes() + 1) : "0" + (temp.getMinutes() + 1)) + ":" + ((temp.getSeconds() + 1) > 9 ? (temp.getSeconds() + 1) : "0" + (temp.getSeconds() + 1));
+
+        needle.get(imageURL, {
+            output: imageFolder + imageName
+        }, function (err, resp, body) {
+            if (err) {
+                log.e(err);
+                return;
+            }
+            result_oc_product.image = "catalog\\"+imageFolder + imageName;
+            result_oc_product.image = result_oc_product.image.replace(/\\/gi, "/");
+            log("Фото стоздано: " + result_oc_product.image);
+            
+            CreateNewProduct.insertProductInMysql(result_oc_product, result_oc_product_description, result_oc_product_to_category, function (error, results) {
+                if (error) {
+                    log.error('Ошибка записи в базу!');
+                    console.log(error);
+                }
+                if (results) {
+                    console.log(results);
+                }
+            })
+        });
 
         console.log(result_oc_product_description);
         callback();

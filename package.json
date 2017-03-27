@@ -18,6 +18,7 @@
   "homepage": "https://github.com/tolik555/from_rozetka_to_OpenCart-2.3.0.2#readme",
   "dependencies": {
     "fs": "0.0.1-security",
-    "mocha": "^3.2.0"
+    "mocha": "^3.2.0",
+    "mysql": "^2.13.0"
   }
 }

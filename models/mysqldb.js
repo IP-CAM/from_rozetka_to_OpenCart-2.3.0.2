@@ -1,5 +1,4 @@
-//var mysql = require('mysql');
-var mysql = require('../node_modules/mysql/');
+var mysql = require('mysql');
 
 exports.connection = mysql.createConnection({
         host: "127.0.0.1",
@@ -7,3 +6,12 @@ exports.connection = mysql.createConnection({
         password: "",
         database: "opencart"
         });
+
+//connection.connect();
+
+//connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
+//  if (error) throw error;
+//  console.log('The solution is: ', results[0].solution);
+//});
+//
+//connection.end();
