@@ -38,8 +38,8 @@ var result_oc_product = {
     "shipping": 1,
     "price": 0,
     "points": 0,
-    "tax_class_id": 0,
-    "date_available": '2000-01-01',
+    "tax_class_id": 9,
+    "date_available": '2018-01-01',
     "weight": 0,
     "weight_class_id": 1,
     "length": 0,
@@ -186,6 +186,8 @@ function crawl(url, callback){
                 log('noname manufacturer');
                 break;
         }
+        
+        result_oc_product.price = $('meta[itemprop="price"]').attr('content');
         
         console.log(result_oc_product_description);   
         callback();
