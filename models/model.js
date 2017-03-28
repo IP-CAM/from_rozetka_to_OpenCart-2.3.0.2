@@ -6,16 +6,7 @@ exports.createInMysql = function (bashPost, cb) {
     });
 }
 
-//exports.insertProductInMysql = function(result_oc_product, cb){
-//    mysqldb.connection.query('INSERT INTO `oc_product` SET ?', result_oc_product, function(error, results, fields){
-//        cb(error, results);
-//        if(results){
-//            console.log(results.insertId);
-//        }
-//    });
-//}
-
-exports.insertProductInMysql = function (result_oc_product, result_oc_product_description, result_oc_product_to_category, cb) {
+exports.insertProductInMysql = function (result_oc_product, result_oc_product_description, result_oc_product_to_category, images, cb) {
     mysqldb.connection.beginTransaction(function (err) {
         if (err) {
             throw err;
@@ -44,15 +35,42 @@ exports.insertProductInMysql = function (result_oc_product, result_oc_product_de
                         });
                     }
 
-                    mysqldb.connection.commit(function (err) {
-                        if (err) {
-                            return mysqldb.connection.rollback(function () {
-                                throw err;
-                            });
+                    if(results && results != ""){
+                        var query = 'INSERT INTO `oc_product_image` VALUE';
+                        for(var url in images){
+                            query += '("", "'+result_oc_product_description.product_id+'", "'+images[url]+'", "0"),';
                         }
-                        console.log('success!');
-                    });
+                        query = query.slice(0, -1);
 
+                        mysqldb.connection.query(query, function (error, results, fields) {
+                            if (error) {
+                                return mysqldb.connection.rollback(function () {
+                                    throw error;
+                                });
+                            }
+
+                            mysqldb.connection.commit(function (err) {
+                                if (err) {
+                                    return mysqldb.connection.rollback(function () {
+                                        throw err;
+                                    });
+                                }
+                                mysqldb.connection.destroy();
+                                console.log('success!');
+                            });
+
+                        }); //четвертый инсерт
+                    } else {
+                        mysqldb.connection.commit(function (err) {
+                                if (err) {
+                                    return mysqldb.connection.rollback(function () {
+                                        throw err;
+                                    });
+                                }
+                                mysqldb.connection.destroy();
+                                console.log('success!');
+                            });
+                    }
                 }); //третий инсерт
             }); //второй инсерт
         }); //первый инсерт
