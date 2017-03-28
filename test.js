@@ -48,7 +48,7 @@ var result_oc_product = {
     "minimum": 0,
     "sort_order": 0,
     "status": 1,
-    "viewed": 0,
+    "viewed": 2,
     "date_added": '',
     "date_modified": ''
 };
@@ -86,11 +86,11 @@ function crawl(url, callback) {
             return callback(true);
         }
 
-        body = res.body.replace(new RegExp("<br>", 'g'), " \r\n");
-        var $ = cheerio.load(body);
+        //body = res.body.replace(new RegExp("<br>", 'g'), " \r\n");
+        var $ = cheerio.load(res.body);
         result_oc_product_description.name = $('h1.detail-title').text();
         $('div#short_text.b-rich-text.text-description-content').each(function () {
-            result_oc_product_description.description = $(this).text().replace(new RegExp(" \r\n", 'g'), "<br>");
+            result_oc_product_description.description = $(this).text();
         });
         result_oc_product_description.meta_title = $('meta[property="og:title"]').attr('content');
         result_oc_product_description.meta_keyword = $('meta[name="keywords"]').attr('content');
@@ -169,19 +169,21 @@ function crawl(url, callback) {
                 return callback(true);
             }
             var $$ = cheerio.load(res.body);
-            var chtml = $$('section[name="characteristics"]').html();
-            result_oc_product_description.description += chtml;
+            var chtml = $$('section[name="characteristics"]>dl').html();
+            result_oc_product_description.description += '<hr><h2>Технические характеристики '+result_oc_product.model+'</h2><br>'+chtml;
+            
+             CreateNewProduct.insertProductInMysql(result_oc_product, result_oc_product_description, result_oc_product_to_category, images, function (error, results) {
+                if (error) {
+                    log.error('Ошибка записи в базу!');
+                    console.log(error);
+                }
+                if (results) {
+                    console.log(results);
+                }
+            })
+            
         });
 
-        CreateNewProduct.insertProductInMysql(result_oc_product, result_oc_product_description, result_oc_product_to_category, images, function (error, results) {
-            if (error) {
-                log.error('Ошибка записи в базу!');
-                console.log(error);
-            }
-            if (results) {
-                console.log(results);
-            }
-        })
         callback();
     });
 }
