@@ -8,10 +8,6 @@ var shell = require('shelljs');
 
 var CreateNewProduct = require('./models/model');
 
-var startURL = 'http://rozetka.com.ua/xiaomi_mi_notebook_air_13_3_sl/p10604934/';
-var imageURL = '';
-var httpOptions = {};
-
 var result_oc_product_description = {
     "product_id": '',
     "language_id": 1,
@@ -67,21 +63,21 @@ var result_oc_product_to_store = {
     "store_id": 0
 };
 
-var results = [];
+var result_oc_product_image ={
+    "product_image_id": '', //autoincrement
+    "product_id": '11111111111',
+    "image": '/1111111111/11111111111',
+    "sort_order": 0
+};
+
+var startURL = 'http://rozetka.com.ua/xiaomi_mi_notebook_air_13_3_sl/p10604934/';
+var imageURL = '';
+var httpOptions = {};
+var images = [];
 var temp;
 var $;
 var a = 0;
 var i;
-
-var q = tress(crawl);
-
-q.push(startURL);
-
-q.drain = function () {
-    fs.writeFileSync('./data.json', JSON.stringify(result_oc_product_description, null, 4));
-    log.finish();
-    log('Работа закончена');
-}
 
 function crawl(url, callback) {
     needle.get(url, function (err, res) {
@@ -153,32 +149,41 @@ function crawl(url, callback) {
         result_oc_product.price = $('meta[itemprop="price"]').attr('content');
         temp = new Date();
         result_oc_product.date_added = result_oc_product.date_modified = temp.getFullYear() + "." + ((temp.getMonth() + 1) > 9 ? (temp.getMonth() + 1) : "0" + (temp.getMonth() + 1)) + "." + ((temp.getDate() + 1) > 9 ? (temp.getDate() + 1) : "0" + (temp.getDate() + 1)) + " " + ((temp.getHours() + 1) > 9 ? (temp.getHours() + 1) : "0" + (temp.getHours() + 1)) + ":" + ((temp.getMinutes() + 1) > 9 ? (temp.getMinutes() + 1) : "0" + (temp.getMinutes() + 1)) + ":" + ((temp.getSeconds() + 1) > 9 ? (temp.getSeconds() + 1) : "0" + (temp.getSeconds() + 1));
-        
-        needle.get('https://img-new.cgtrader.com/items/28284/b0aa529d64/samsung-logo-3d-model-obj-3ds-fbx-blend-dae.png').pipe(fs.createWriteStream('logo.png'));
-        
-        needle.get(imageURL, {
-            output: imageFolder + imageName
-        }, function (err, resp, body) {
-            if (err) {
-                log.e(err);
-                return;
-            }
-            result_oc_product.image = "catalog\\" + imageFolder + imageName;
-            result_oc_product.image = result_oc_product.image.replace(/\\/gi, "/");
-            log("Фото стоздано: " + result_oc_product.image);
 
-            CreateNewProduct.insertProductInMysql(result_oc_product, result_oc_product_description, result_oc_product_to_category, function (error, results) {
-                if (error) {
-                    log.error('Ошибка записи в базу!');
-                    console.log(error);
-                }
-                if (results) {
-                    console.log(results);
-                }
-            })
+        needle.get(imageURL).pipe(fs.createWriteStream(imageFolder + imageName));
+        result_oc_product.image = "catalog\\" + imageFolder + imageName;
+        result_oc_product.image = result_oc_product.image.replace(/\\/gi, "/");
+        log("Фото стоздано: " + result_oc_product.image);
+        
+        $('div.detail-img-thumbs-l-i>a').each(function () {
+            var imageURL = $(this).attr('href');
+            var imageName = imageURL.split('/').pop();
+            needle.get(imageURL).pipe(fs.createWriteStream(imageFolder + imageName));
+            var imagePath = "catalog\\" + imageFolder + imageName;
+            images.push(imagePath.replace(/\\/gi, "/"));
         });
+
+        CreateNewProduct.insertProductInMysql(result_oc_product, result_oc_product_description, result_oc_product_to_category, images, function (error, results) {
+            if (error) {
+                log.error('Ошибка записи в базу!');
+                console.log(error);
+            }
+            if (results) {
+                console.log(results);
+            }
+        })
 
         console.log(result_oc_product_description);
         callback();
     });
+}
+
+var q = tress(crawl);
+
+q.push(startURL);
+
+q.drain = function () {
+    //fs.writeFileSync('./data.json', JSON.stringify(result_oc_product_description, null, 4));
+    log.finish();
+    log('Работа закончена');
 }
