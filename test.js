@@ -63,7 +63,7 @@ var result_oc_product_to_store = {
     "store_id": 0
 };
 
-var result_oc_product_image ={
+var result_oc_product_image = {
     "product_image_id": '', //autoincrement
     "product_id": '11111111111',
     "image": '/1111111111/11111111111',
@@ -153,14 +153,24 @@ function crawl(url, callback) {
         needle.get(imageURL).pipe(fs.createWriteStream(imageFolder + imageName));
         result_oc_product.image = "catalog\\" + imageFolder + imageName;
         result_oc_product.image = result_oc_product.image.replace(/\\/gi, "/");
-        log("Фото стоздано: " + result_oc_product.image);
-        
+
         $('div.detail-img-thumbs-l-i>a').each(function () {
             var imageURL = $(this).attr('href');
             var imageName = imageURL.split('/').pop();
             needle.get(imageURL).pipe(fs.createWriteStream(imageFolder + imageName));
             var imagePath = "catalog\\" + imageFolder + imageName;
             images.push(imagePath.replace(/\\/gi, "/"));
+        });
+
+        var characteristicsURL = startURL + '#tab=characteristics';
+        needle.get(characteristicsURL, function (err, res) {
+            if (err || res.statusCode !== 200) {
+                log.e((err || res.statusCode) + ' - ' + url);
+                return callback(true);
+            }
+            var $$ = cheerio.load(res.body);
+            var chtml = $$('section[name="characteristics"]').html();
+            result_oc_product_description.description += chtml;
         });
 
         CreateNewProduct.insertProductInMysql(result_oc_product, result_oc_product_description, result_oc_product_to_category, images, function (error, results) {
@@ -172,8 +182,6 @@ function crawl(url, callback) {
                 console.log(results);
             }
         })
-
-        console.log(result_oc_product_description);
         callback();
     });
 }
