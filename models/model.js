@@ -28,7 +28,7 @@ exports.insertProductInMysql = function (result_oc_product, result_oc_product_de
                     });
                 }
 
-                mysqldb.connection.query('INSERT INTO `oc_product_to_category` SET ?', result_oc_product_to_category, function (error, results, fields) {
+                mysqldb.connection.query('INSERT INTO `oc_product_to_category` SET ?;SET @lastID := LAST_INSERT_ID();INSERT INTO `oc_product_to_store` VALUE(@lastID,"0");', result_oc_product_to_category, function (error, results, fields) {
                     if (error) {
                         return mysqldb.connection.rollback(function () {
                             throw error;
