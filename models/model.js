@@ -1,12 +1,14 @@
-var mysqldb = require('./mysqldb');
-var log = require('cllc')();
+var mysqldb = require('./mysqldb');// блок подключения к базе данных
+var log = require('cllc')();//библиотека для вывода сообщений в консоль
 
 exports.insertProductInMysql = function (result_oc_product, result_oc_product_description, result_oc_product_to_category, images, cb) {
-    //mysqldb.connection.connect();
+    // старт транзакции
     mysqldb.connection.beginTransaction(function (err) {
         if (err) {
             throw err;
         }
+        
+        //Добавление первого запроса если ошибка то откат
         mysqldb.connection.query('INSERT INTO `oc_product` SET ?;SET @lastID := LAST_INSERT_ID();', result_oc_product, function (error, results, fields) {
             if (error) {
                 console.log(result_oc_product);
@@ -15,9 +17,7 @@ exports.insertProductInMysql = function (result_oc_product, result_oc_product_de
                 });
             }
 
-//            result_oc_product_description.product_id = results.insertId;
-//            result_oc_product_to_category.product_id = results.insertId;
-
+            //Добавление второго запроса если ошибка то откат
             mysqldb.connection.query('REPLACE INTO `oc_product_description` SET `product_id`= @lastID,?', result_oc_product_description, function (error, results, fields) {
                 if (error) {
                     //console.log(result_oc_product_description);
@@ -26,6 +26,7 @@ exports.insertProductInMysql = function (result_oc_product, result_oc_product_de
                     });
                 }
 
+                //Добавление третьего запроса если ошибка то откат
                 mysqldb.connection.query('REPLACE INTO `oc_product_to_category` SET `product_id`= @lastID,?;REPLACE INTO `oc_product_to_store` VALUE(@lastID,"0");', result_oc_product_to_category, function (error, results, fields) {
                     if (error) {
                         console.log(error);
@@ -34,6 +35,7 @@ exports.insertProductInMysql = function (result_oc_product, result_oc_product_de
                         });
                     }
 
+                    //Динамическое формирование четвертого запроса
                     if(results && results != ""){
                         var query = 'REPLACE INTO `oc_product_image` VALUE';
                         for(var url in images){
