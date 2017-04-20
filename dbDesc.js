@@ -81,3 +81,15 @@ var result_oc_product_to_store = {
     "product_id": '',
     "store_id": 0
 };
+
+var oc_manufacturer = {
+    manufacturer_id: '',
+    name: '',
+    image: '',
+    sort_order: 0
+};
+
+var oc_manufacturer_to_store = {
+    manufacturer_id: '',
+    store_id: 0
+};
